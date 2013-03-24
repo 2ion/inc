@@ -155,7 +155,8 @@ local function apply_verbs(v, n, nt)
             end
         end
         validate_verb(verb)
-        local target = verb.index < 0 and nt[(#nt + verb.index)] or nt[verb.index]
+        local target_index = verb.index > 0 and verb.index or (#nt + verb.index + 1)
+        local target = nt[target_index]
         local tvalue = target[3]
         if verb.rel ~= '=' then
             tvalue = tvalue + verb.delta
