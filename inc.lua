@@ -80,6 +80,12 @@ Examples:
         to 4, and express the 3rd number as a 7 digit number, ie.
         `0000004`.
 
+    inc ,0-50 $string
+        Decrement all numbers by 50.
+
+    inc ,0+0/5 $string
+        Express all numbers in $string with 5 digits without altering them.
+
 Return values:
     0 in case of success, 1 in case of an error.
     ]])
@@ -155,18 +161,33 @@ local function apply_verbs(v, n, nt)
             end
         end
         validate_verb(verb)
-        local target_index = verb.index > 0 and verb.index or (#nt + verb.index + 1)
-        local target = nt[target_index]
-        local tvalue = target[3]
-        if verb.rel ~= '=' then
-            tvalue = tvalue + verb.delta
+        if verb.index == 0 then
+            tx.foreachi(nt, function (target)
+                local tvalue = target[3]
+                if verb.rel ~= '=' then
+                    tvalue = tvalue + verb.delta
+                else
+                    tvalue = verb.delta
+                end
+                if verb.opt then
+                    tvalue = string.format("%0" .. verb.opt .. "d", tvalue)
+                end
+                target[3] = tvalue
+            end)
         else
-            tvalue = verb.delta
+            local target_index = verb.index > 0 and verb.index or (#nt + verb.index + 1)
+            local target = nt[target_index]
+            local tvalue = target[3]
+            if verb.rel ~= '=' then
+                tvalue = tvalue + verb.delta
+            else
+                tvalue = verb.delta
+            end
+            if verb.opt then
+                tvalue = string.format("%0" .. verb.opt .. "d", tvalue)
+            end
+            target[3] = tvalue
         end
-        if verb.opt then
-            tvalue = string.format("%0" .. verb.opt .. "d", tvalue)
-        end
-        target[3] = tvalue
     end)
 end
 

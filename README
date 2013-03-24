@@ -48,6 +48,12 @@ Examples:
         to 4, and express the 3rd number as a 7 digit number, ie.
         `0000004`.
 
+    inc ,0-50 $string
+        Decrement all numbers by 50.
+
+    inc ,0+0/5 $string
+        Express all numbers in $string with 5 digits without altering them.
+
 Return values:
     0 in case of success, 1 in case of failure
 
