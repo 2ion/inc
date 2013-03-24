@@ -5,6 +5,10 @@ inc - manipulate unsigned integers in strings
 Copyright (c) 2013, Jens Oliver John )joj (mailswirl) 2ion dot de(
 All rights reserved.
 
+Requirements:
+    - Lua 5.2
+    - lua-penlight
+
 Invocation:
     inc <verblist> <string>
         Applies <verlist> onto <string>, printing the result to stdout.
