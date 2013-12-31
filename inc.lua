@@ -1,4 +1,4 @@
-#!/usr/bin/env lua
+#!/usr/bin/luajit
 -- inc - manipulate unsinged integers in strings
 --
 -- Copyright (c) 2013, Jens Oliver John )joj (mailswirl) 2ion dot de(
@@ -27,12 +27,16 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 local tx = require 'pl.tablex'
+local print = print
+local TInsert = table.insert
+local TConcat = table.concat
+local OSExit = os.exit
 
 -- FUNCTION DEFINITIONS
 
 local function die(t)
     print(string.format(unpack(t)))
-    os.exit(1)
+    OSExit(1)
 end
 
 local function usage()
@@ -59,35 +63,6 @@ Where:
     <verb>      := [+-]?<number_index>[+-=]<number_delta>[/<digitcount>]
     <string>    := A string with at least a single digit character. At
                    this point, all numbers will be parsed *UNSIGNED*.
-
-Examples:
-    inc ,-1+5 $string
-        Increment the first last number by 5
-    
-    inc ,-2-3 $string
-        Decrement the second last number by 3
-
-    inc ,1-3,-2-4 $string
-        Decrement the first number by 3 and decrement the second
-        last number by 4.
-
-    inc ,+1+3,3=4 $string
-        Increment the first number by 3 and set the third number
-        to 4.
-
-    inc ,1+3,3=4/7 $string
-        Increment the first number by 3 and set the third number
-        to 4, and express the 3rd number as a 7 digit number, ie.
-        `0000004`.
-
-    inc ,0-50 $string
-        Decrement all numbers by 50.
-
-    inc ,0+0/5 $string
-        Express all numbers in $string with 5 digits without altering them.
-
-Return values:
-    0 in case of success, 1 in case of an error.
     ]])
 end
 
@@ -100,19 +75,19 @@ local function parse_string(s)
         if not i then break end
         if n[#n] then
             local k,l = n[#n][2]+1, i-1
-            table.insert(n, { k, l, s:sub(k, l) })
+            TInsert(n, { k, l, s:sub(k, l) })
         else
             local k,l = 1, i-1
-            table.insert(n, { k, l, s:sub(k, l) })
+            TInsert(n, { k, l, s:sub(k, l) })
         end
-        table.insert(n, { i, j, k, ni })
-        table.insert(nt, n[#n])
+        TInsert(n, { i, j, k, ni })
+        TInsert(nt, n[#n])
         ni = ni + 1
         p = j+1
     end
     if p <= #s then
         local k,l = p, #s
-        table.insert(n, { p, #s, s:sub(k, l) })
+        TInsert(n, { p, #s, s:sub(k, l) })
     end
     return n, nt
 end
@@ -120,7 +95,7 @@ end
 local function parse_verbs(vstr)
     local v = {}
     for verb, index, rel, delta, opt in vstr:gmatch("(,([+-]?[%d]+)([+-=])([%d]+)([/%d]*))") do
-        table.insert(v, { index=index, rel=rel, delta=delta, opt=opt })
+        TInsert(v, { index=index, rel=rel, delta=delta, opt=opt })
     end
     -- convert index :: string to index :: int, respecting the prefixes,
     -- and remove the /prefix from opt
@@ -192,11 +167,11 @@ local function apply_verbs(v, n, nt)
 end
 
 local function concat(n)
-    return table.concat(tx.imap(function (v) return v[3] end, n))
+    return TConcat(tx.imap(function (v) return v[3] end, n))
 end
 
 local function color_numbers(n)
-    return table.concat(tx.imap(function (v)
+    return TConcat(tx.imap(function (v)
         if v[4] then
             return string.format("\27[1;34m(%d)\027[1;33m%s\027[0;m", v[4], v[3])
         else
@@ -227,12 +202,3 @@ else
     print(concat(n))
     os.exit(0)
 end
-
---local n, nt = parse_string(test)
---print("Input string:")
---print(color_numbers(n))
---print("Parsing verbs ...")
---local v = parse_verbs(arg[1])
---print("Applying verbs ...")
---apply_verbs(v, n, nt)
---print(color_numbers(n))
